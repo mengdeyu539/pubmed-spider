@@ -109,26 +109,32 @@ def save_to_csv(data, filename):
 
 def download_pubmed_ids(query, article_types=None, start_year=None, end_year=None):
 # 获取 PubMed IDs
-    print("Fetching PubMed IDs...")
-    pubmed_ids = fetch_pubmed_ids(query, article_types=article_types, start_year=start_year, end_year=end_year)
+    details_list = []
+    for year in range(0, 25, 2):
+        start_year = 2000 + year
+        end_year = start_year + 2
+        if end_year > 2024:
+            break
+        print(f"Fetching PubMed IDs from year {start_year} to {end_year}...")
+        pubmed_ids = fetch_pubmed_ids(query, article_types=article_types, start_year=start_year, end_year=end_year)
 
 # 获取详细信息并显示进度条
-    print("Fetching PubMed details...")
-    details_list = []
-    batch_size = 100  # Increase batch size to improve efficiency
+        print("Fetching PubMed details...")
 
-    with Bar("downloading:", max=len(pubmed_ids)/batch_size, fill="🏀", suffix='%(percent).1f%%-%(eta)ds') as bar:
-        for i in range(0, len(pubmed_ids), batch_size):
-            batch_ids = pubmed_ids[i:i + batch_size]
-            xml_data = fetch_pubmed_details(batch_ids)
-            details_list.extend(parse_pubmed_details(xml_data))
-            bar.next()
+        batch_size = 100  # Increase batch size to improve efficiency
+
+        with Bar("downloading:", max=len(pubmed_ids)/batch_size, fill="🏀", suffix='%(percent).1f%%-%(eta)ds') as bar:
+            for i in range(0, len(pubmed_ids), batch_size):
+                batch_ids = pubmed_ids[i:i + batch_size]
+                xml_data = fetch_pubmed_details(batch_ids)
+                details_list.extend(parse_pubmed_details(xml_data))
+                bar.next()
 
 # 保存为 CSV
 
-        save_to_csv(details_list, 'filtered_pubmed_{}_{}_{}.csv'.format(query,start_year,end_year))
-        print("\nSaving to CSV...")
-        print(f"Saved {len(details_list)} filtered articles to filtered_pubmed_{query}_{start_year}_{end_year}.csv")
+    save_to_csv(details_list, 'filtered_pubmed_{}_2020_2024.csv'.format(query))
+    print("\nSaving to CSV...")
+    print(f"Saved {len(details_list)} filtered articles to filtered_pubmed_{query}_2020_2024.csv")
 
 if __name__ == '__main__':
     years = 2
@@ -138,9 +144,4 @@ if __name__ == '__main__':
     start_year = 2000
     end_year = 2024
     for query in querys:
-        for year in range(0, 25, years):
-            start_year = 2000+year
-            end_year = start_year + 2
-            if end_year > 2024:
-                break
-            download_pubmed_ids(query, article_types, start_year, end_year)
+        download_pubmed_ids(query, article_types, start_year, end_year)
