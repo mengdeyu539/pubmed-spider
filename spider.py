@@ -56,7 +56,7 @@ def parse_pubmed_details(xml_data):
     for article in root.findall('.//PubmedArticle'):
         pubmed_id = article.findtext('.//PMID')
         title = article.findtext('.//ArticleTitle')
-        years = article.findall('.//ArticleYear')
+        years = article.findall('.//Year')
 
         # 处理摘要
         abstract = ''
@@ -81,11 +81,20 @@ def parse_pubmed_details(xml_data):
 
         article_types = [at.text for at in article.findall('.//PublicationTypeList/PublicationType')]
 
+        pub_date = article.find('.//PubDate')
+        year = None
+        if pub_date is not None:
+            year = pub_date.findtext('Year')
+            if year is None:  # 尝试另一种格式
+                year = pub_date.findtext('MedlineDate')
+                if year:
+                    year = year.split()[0]  # 取年份部分
+
         articles.append({
             'pubmed_id': pubmed_id,
             'title': title,
             'abstract': abstract,
-            'years': years
+            'years': year
             #'article_types': article_types
         })
     return articles
@@ -116,14 +125,14 @@ def download_pubmed_ids(query, article_types=None, start_year=None, end_year=Non
             bar.next()
 
 # 保存为 CSV
-        print("Saving to CSV...")
-        save_to_csv(details_list, 'filtered_pubmed_{}.csv'.format(query))
 
+        save_to_csv(details_list, 'filtered_pubmed_{}.csv'.format(query))
+        print("\nSaving to CSV...")
         print(f"Saved {len(details_list)} filtered articles to filtered_pubmed_{query}.csv")
 
 if __name__ == '__main__':
     query = "fitness training"
     article_types = ["Clinical Trial", "Randomized Controlled Trial"]
-    start_year = 2015
-    end_year = 2023
+    start_year = 2023
+    end_year = 2024
     download_pubmed_ids(query, article_types, start_year, end_year)
