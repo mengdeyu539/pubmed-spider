@@ -126,13 +126,21 @@ def download_pubmed_ids(query, article_types=None, start_year=None, end_year=Non
 
 # 保存为 CSV
 
-        save_to_csv(details_list, 'filtered_pubmed_{}.csv'.format(query))
+        save_to_csv(details_list, 'filtered_pubmed_{}_{}_{}.csv'.format(query,start_year,end_year))
         print("\nSaving to CSV...")
-        print(f"Saved {len(details_list)} filtered articles to filtered_pubmed_{query}.csv")
+        print(f"Saved {len(details_list)} filtered articles to filtered_pubmed_{query}_{start_year}_{end_year}.csv")
 
 if __name__ == '__main__':
-    query = "fitness training"
+    years = 2
+    querys = ["fitness training", "physical activity", 'exercise training']
+    #querya = ['physical exercise', 'Tai Chi exercise', 'taichi exercise']
     article_types = ["Clinical Trial", "Randomized Controlled Trial"]
-    start_year = 2023
+    start_year = 2000
     end_year = 2024
-    download_pubmed_ids(query, article_types, start_year, end_year)
+    for query in querys:
+        for year in range(0, 25, years):
+            start_year = 2000+year
+            end_year = start_year + 2
+            if end_year > 2024:
+                break
+            download_pubmed_ids(query, article_types, start_year, end_year)
